@@ -18,26 +18,59 @@
             <h3>
                 Nome <input type="text" name="" id="username">
                 Ipsum dolor sit amet consectetur adipisicing elit. Dolorem nam laborum molestiae, perferendis beatae
-                <select name="s1" id="is1"></select>
+                <select name="s1" id="is1">
+                </select>
                 Lorem ipsum dolor, sit amet consectetur adipisicing elit. Praesentium sapiente facere cumque ?
-                <select name="s2" id="is2"></select>
+                <select name="s2" id="is2">
+                </select>
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellendus consequatur ratione tempore quam error sed illum onsequuntur! Quia beatae aliquam
-                <select name="s3" id="is3"></select>
+                <select name="s3" id="is3">
+                </select>
             </h3>
         </div>
         <input type="button" value="Gerar PDF" id="pdf">
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch('get_options.php')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('is1').innerHTML = data;
-                    document.getElementById('is2').innerHTML = data;
-                    document.getElementById('is3').innerHTML = data;
-                })
-                .catch(error => console.error('Erro ao buscar nomes:', error));
+        async function fetchNomes() {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const nomes = await response.json();
+                return nomes;
+            } catch (error) {
+                console.error('Erro ao buscar nomes:', error);
+            }
+        }
+
+        function preencherSelects(nomes) {
+            if (!nomes || nomes.length === 0) {
+                console.error('Nenhum nome encontrado.');
+                return;
+            }
+            
+            const selects = document.querySelectorAll('select');
+            selects.forEach(select => {
+                nomes.forEach(nome => {
+                    const option = document.createElement('option');
+                    option.value = nome.nome;
+                    option.textContent = nome.nome;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Certifique-se de que data.json já está atualizado
+            await fetch('generate_json.php');
+            
+            // Aguarda o arquivo JSON ser criado
+            const nomes = await fetchNomes();
+            if (nomes) {
+                preencherSelects(nomes);
+            }
         });
     </script>
 </body>
